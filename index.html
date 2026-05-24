@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AutoShift — Автоматизация для бизнеса</title>
+<meta name="description" content="AutoShift — автоматизируем бизнес-процессы с помощью AI. AI Admin, чат-боты, CRM, RPA и многое другое.">
+<style>
+:root{
+  --black:#000;--bg:#050a06;--green:#00c853;--green2:#00e676;--emerald:#1de9b6;
+  --dg:#0a2215;--card:rgba(10,34,21,.4);--border:rgba(0,200,83,.12);
+  --bh:rgba(0,200,83,.45);--white:#fff;--gray:#7a9a87;--gray2:#b0c4b8;
+  --glow:0 0 40px rgba(0,200,83,.22);--glows:0 0 65px rgba(0,200,83,.38);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  background:var(--black);color:var(--white);overflow-x:hidden;line-height:1.6}
+
+/* CANVAS */
+#bgc{position:fixed;inset:0;z-index:0;pointer-events:none}
+
+/* UTILS */
+.wrap{max-width:1200px;margin:0 auto;padding:0 48px}
+.tag{display:inline-flex;align-items:center;gap:8px;
+  background:rgba(0,200,83,.07);border:1px solid rgba(0,200,83,.25);
+  color:var(--green);padding:6px 18px;border-radius:100px;
+  font-size:.76rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:22px}
+.gt{background:linear-gradient(135deg,#fff 0%,var(--green) 55%,var(--emerald) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stitle{font-size:clamp(2rem,4vw,3.2rem);font-weight:900;letter-spacing:-1.5px;line-height:1.12;margin-bottom:14px}
+.ssub{color:var(--gray2);font-size:1.05rem;line-height:1.8;max-width:580px;margin-bottom:56px}
+
+.btn1{display:inline-flex;align-items:center;gap:10px;
+  background:linear-gradient(135deg,var(--green),var(--emerald));
+  color:#000;font-weight:700;font-size:1rem;padding:16px 36px;
+  border-radius:100px;text-decoration:none;transition:all .3s;
+  box-shadow:0 0 30px rgba(0,200,83,.35);white-space:nowrap}
+.btn1:hover{transform:translateY(-3px) scale(1.02);box-shadow:0 0 60px rgba(0,200,83,.55)}
+.btn2{display:inline-flex;align-items:center;gap:10px;
+  background:transparent;color:var(--white);font-weight:600;font-size:1rem;
+  padding:15px 36px;border-radius:100px;text-decoration:none;
+  border:1px solid rgba(255,255,255,.18);transition:all .3s;white-space:nowrap}
+.btn2:hover{border-color:var(--green);color:var(--green);transform:translateY(-3px)}
+
+/* REVEAL */
+.rv{opacity:0;transform:translateY(36px);
+  transition:opacity .75s cubic-bezier(.16,1,.3,1),transform .75s cubic-bezier(.16,1,.3,1)}
+.rv.on{opacity:1;transform:none}
+.d1{transition-delay:.1s}.d2{transition-delay:.2s}.d3{transition-delay:.3s}
+.d4{transition-delay:.4s}.d5{transition-delay:.5s}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:18px 48px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(0,0,0,.65);backdrop-filter:blur(24px);
+  border-bottom:1px solid var(--border);transition:padding .3s}
+.nbrand{display:flex;align-items:center;gap:12px;text-decoration:none}
+.nbrand img{height:38px;filter:drop-shadow(0 0 8px rgba(0,200,83,.4))}
+.nbname{font-size:1.3rem;font-weight:900;color:var(--white);letter-spacing:-.5px}
+.nbname em{font-style:normal;color:var(--green)}
+.nlinks{display:flex;align-items:center;gap:34px;list-style:none}
+.nlinks a{color:var(--gray2);text-decoration:none;font-size:.9rem;transition:color .2s;position:relative}
+.nlinks a:not(.ncta)::after{content:'';position:absolute;bottom:-2px;left:0;right:0;
+  height:1px;background:var(--green);transform:scaleX(0);transition:transform .3s}
+.nlinks a:not(.ncta):hover{color:var(--white)}
+.nlinks a:not(.ncta):hover::after{transform:scaleX(1)}
+.ncta{background:linear-gradient(135deg,var(--green),var(--emerald));color:#000!important;
+  font-weight:700!important;padding:9px 22px;border-radius:100px;
+  box-shadow:0 0 20px rgba(0,200,83,.3);transition:all .3s!important}
+.ncta:hover{box-shadow:0 0 40px rgba(0,200,83,.55)!important;transform:translateY(-1px)}
+
+/* HERO */
+#hero{position:relative;z-index:1;min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:120px 48px 80px;overflow:hidden}
+.hglow{position:absolute;width:750px;height:750px;
+  background:radial-gradient(circle,rgba(0,200,83,.13) 0%,transparent 68%);
+  top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;
+  animation:pglow 4s ease-in-out infinite}
+@keyframes pglow{0%,100%{opacity:.7;transform:translate(-50%,-50%) scale(1)}
+  50%{opacity:1;transform:translate(-50%,-50%) scale(1.15)}}
+.hbadge{display:inline-flex;align-items:center;gap:9px;
+  background:rgba(0,200,83,.08);border:1px solid rgba(0,200,83,.3);
+  padding:9px 22px;border-radius:100px;font-size:.84rem;color:var(--green);
+  font-weight:500;margin-bottom:32px;animation:fdown .8s ease both}
+.hbadge .dot{width:7px;height:7px;background:var(--green);border-radius:50%;
+  animation:blink 2s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+#hero h1{font-size:clamp(2.8rem,7.5vw,6.8rem);font-weight:900;line-height:1.03;
+  letter-spacing:-3px;margin-bottom:28px;animation:fup .9s ease .15s both}
+.htype{display:block}
+#tcursor{display:inline-block;width:4px;height:.82em;background:var(--green);
+  margin-left:3px;border-radius:2px;vertical-align:middle;
+  animation:cblink .8s step-end infinite}
+@keyframes cblink{0%,100%{opacity:1}50%{opacity:0}}
+#hero p{font-size:clamp(1rem,2vw,1.2rem);color:var(--gray2);max-width:620px;
+  line-height:1.8;margin-bottom:48px;animation:fup .9s ease .3s both}
+.hbtns{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;animation:fup .9s ease .45s both}
+.hscroll{position:absolute;bottom:36px;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  color:var(--gray);font-size:.76rem;letter-spacing:1px;text-transform:uppercase;
+  animation:fup 1s ease 1s both}
+.sline{width:1px;height:40px;background:linear-gradient(to bottom,var(--green),transparent);
+  animation:slanim 2s ease-in-out infinite}
+@keyframes slanim{0%,100%{transform:scaleY(1);opacity:1}50%{transform:scaleY(.4);opacity:.2}}
+@keyframes fdown{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:none}}
+@keyframes fup{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:none}}
+
+/* MARQUEE */
+.mwrap{position:relative;z-index:1;overflow:hidden;
+  border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+  background:linear-gradient(90deg,rgba(0,200,83,.04),rgba(29,233,182,.03));padding:14px 0}
+.mtrack{display:flex;gap:48px;animation:mrun 28s linear infinite;width:max-content}
+@keyframes mrun{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.mi{display:flex;align-items:center;gap:10px;white-space:nowrap;
+  color:var(--gray2);font-size:.87rem;font-weight:500}
+.mi .md{width:5px;height:5px;background:var(--green);border-radius:50%;flex-shrink:0}
+
+/* STATS */
+#stats{position:relative;z-index:1;padding:80px 0}
+.sgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;max-width:1200px;margin:0 auto;padding:0 48px}
+.sc{background:var(--card);border:1px solid var(--border);border-radius:20px;
+  padding:36px 24px;text-align:center;backdrop-filter:blur(12px);
+  transition:all .35s;position:relative;overflow:hidden}
+.sc::before{content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(0,200,83,.06),transparent);opacity:0;transition:opacity .35s}
+.sc:hover{border-color:var(--bh);box-shadow:var(--glow);transform:translateY(-6px)}
+.sc:hover::before{opacity:1}
+.sv{font-size:3rem;font-weight:900;letter-spacing:-2px;
+  background:linear-gradient(135deg,var(--green),var(--emerald));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  display:block;line-height:1;margin-bottom:12px}
+.sl{color:var(--gray2);font-size:.87rem;line-height:1.5}
+
+/* SERVICES */
+#services{position:relative;z-index:1;padding:40px 0 100px}
+.srvgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.srvc{background:var(--card);border:1px solid var(--border);border-radius:20px;
+  padding:34px 30px;transition:all .35s;position:relative;overflow:hidden;cursor:default}
+.srvc::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--green),transparent);
+  opacity:0;transition:opacity .35s}
+.srvc:hover{border-color:var(--bh);box-shadow:var(--glow);transform:translateY(-8px)}
+.srvc:hover::after{opacity:1}
+.srvc.feat{grid-column:span 2;
+  background:linear-gradient(135deg,rgba(0,200,83,.07),rgba(29,233,182,.03));
+  border-color:rgba(0,200,83,.22)}
+.sico{width:54px;height:54px;background:rgba(0,200,83,.08);
+  border:1px solid rgba(0,200,83,.2);border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.55rem;margin-bottom:18px;transition:all .35s}
+.srvc:hover .sico{background:rgba(0,200,83,.15);box-shadow:0 0 20px rgba(0,200,83,.2)}
+.srvc h3{font-size:1.08rem;font-weight:700;margin-bottom:10px;letter-spacing:-.3px}
+.srvc p{color:var(--gray2);font-size:.89rem;line-height:1.7}
+.sbadge{display:inline-flex;align-items:center;gap:5px;
+  background:linear-gradient(135deg,var(--green),var(--emerald));
+  color:#000;font-size:.68rem;font-weight:700;padding:3px 10px;
+  border-radius:100px;margin-left:8px;vertical-align:middle}
+
+/* PRODUCT */
+#product{position:relative;z-index:1;padding:40px 0 100px;
+  background:linear-gradient(180deg,transparent,rgba(0,200,83,.02) 50%,transparent)}
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center}
+.pfeats{display:flex;flex-direction:column;gap:16px;margin-top:32px}
+.pf{display:flex;gap:16px;align-items:flex-start;padding:18px;
+  background:var(--card);border:1px solid var(--border);border-radius:16px;transition:all .3s}
+.pf:hover{border-color:var(--bh);box-shadow:0 0 20px rgba(0,200,83,.1)}
+.pfico{width:40px;height:40px;background:rgba(0,200,83,.1);
+  border:1px solid rgba(0,200,83,.2);border-radius:10px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.1rem}
+.pftxt h4{font-weight:700;font-size:.94rem;margin-bottom:4px}
+.pftxt p{color:var(--gray2);font-size:.84rem;line-height:1.6}
+
+/* CHAT */
+.chat{background:rgba(7,22,12,.85);border:1px solid rgba(0,200,83,.2);
+  border-radius:24px;overflow:hidden;
+  box-shadow:0 0 60px rgba(0,200,83,.08),0 40px 80px rgba(0,0,0,.45)}
+.ctop{display:flex;align-items:center;gap:12px;padding:15px 20px;
+  background:rgba(0,0,0,.35);border-bottom:1px solid var(--border)}
+.cdots{display:flex;gap:6px}
+.cdots span{width:10px;height:10px;border-radius:50%}
+.cdots span:nth-child(1){background:#ff5f57}
+.cdots span:nth-child(2){background:#ffbd2e}
+.cdots span:nth-child(3){background:#28ca41}
+.cinfo{flex:1;text-align:center}
+.cname{font-weight:600;font-size:.87rem}
+.cstatus{font-size:.7rem;color:var(--green)}
+.cmsgs{padding:18px;display:flex;flex-direction:column;gap:12px;min-height:330px}
+.cm{display:flex;gap:9px;align-items:flex-end;opacity:0;transform:translateY(8px);transition:all .4s ease}
+.cm.on{opacity:1;transform:none}
+.cm.u{flex-direction:row-reverse}
+.cav{width:28px;height:28px;border-radius:50%;
+  background:linear-gradient(135deg,var(--green),var(--emerald));
+  display:flex;align-items:center;justify-content:center;
+  font-size:.67rem;font-weight:700;color:#000;flex-shrink:0}
+.cm.u .cav{background:rgba(255,255,255,.1);color:var(--white)}
+.cb{max-width:82%;padding:11px 15px;border-radius:18px;font-size:.87rem;line-height:1.5}
+.cm.b .cb{background:rgba(0,200,83,.08);border:1px solid rgba(0,200,83,.2);border-bottom-left-radius:4px}
+.cm.u .cb{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-bottom-right-radius:4px;color:var(--gray2)}
+.ctyp{display:flex;gap:9px;align-items:flex-end;opacity:0;transition:opacity .3s}
+.ctyp.on{opacity:1}
+.tbub{background:rgba(0,200,83,.08);border:1px solid rgba(0,200,83,.2);
+  border-radius:18px;border-bottom-left-radius:4px;padding:11px 15px;
+  display:flex;gap:5px;align-items:center}
+.td{width:6px;height:6px;background:var(--green);border-radius:50%}
+.td:nth-child(1){animation:tda 1.2s 0s infinite}
+.td:nth-child(2){animation:tda 1.2s .2s infinite}
+.td:nth-child(3){animation:tda 1.2s .4s infinite}
+@keyframes tda{0%,100%{opacity:.2;transform:scale(1)}50%{opacity:1;transform:scale(1.3)}}
+.cres{margin:0 18px 18px;padding:11px 15px;
+  background:rgba(0,200,83,.06);border:1px solid rgba(0,200,83,.25);
+  border-radius:12px;display:flex;align-items:center;gap:10px;
+  font-size:.81rem;color:var(--green);opacity:0;transform:translateY(6px);transition:all .4s ease}
+.cres.on{opacity:1;transform:none}
+
+/* HOW */
+#how{position:relative;z-index:1;padding:40px 0 100px}
+.hwgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;position:relative}
+.hwgrid::before{content:'';position:absolute;top:52px;
+  left:calc(16.66% + 24px);right:calc(16.66% + 24px);
+  height:1px;background:linear-gradient(90deg,var(--green),var(--emerald),var(--green));opacity:.25}
+.hwc{background:var(--card);border:1px solid var(--border);border-radius:20px;
+  padding:36px 26px;text-align:center;transition:all .35s;position:relative}
+.hwc:hover{border-color:var(--bh);box-shadow:var(--glow);transform:translateY(-8px)}
+.hwnum{width:64px;height:64px;background:linear-gradient(135deg,var(--green),var(--emerald));
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:1.6rem;font-weight:900;color:#000;margin:0 auto 22px;
+  box-shadow:0 0 30px rgba(0,200,83,.35)}
+.hwc h3{font-size:1.12rem;font-weight:700;margin-bottom:10px;letter-spacing:-.3px}
+.hwc p{color:var(--gray2);font-size:.89rem;line-height:1.7}
+
+/* PRICING */
+#pricing{position:relative;z-index:1;padding:40px 0 100px}
+.prgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.prc{background:var(--card);border:1px solid var(--border);border-radius:24px;
+  padding:38px;transition:all .35s;position:relative;display:flex;flex-direction:column}
+.prc.hot{background:linear-gradient(135deg,rgba(0,200,83,.06),rgba(29,233,182,.03));
+  border-color:rgba(0,200,83,.35);box-shadow:0 0 40px rgba(0,200,83,.1)}
+.prc:hover{transform:translateY(-8px);box-shadow:var(--glows)}
+.pbadge{position:absolute;top:-14px;left:50%;transform:translateX(-50%);
+  background:linear-gradient(135deg,var(--green),var(--emerald));color:#000;
+  font-size:.7rem;font-weight:700;padding:4px 16px;border-radius:100px;white-space:nowrap}
+.prn{font-size:1.22rem;font-weight:800;margin-bottom:6px}
+.prd{color:var(--gray2);font-size:.87rem;margin-bottom:26px}
+.prpv{font-size:3.5rem;font-weight:900;letter-spacing:-2px;
+  background:linear-gradient(135deg,var(--green),var(--emerald));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  line-height:1;margin-bottom:4px}
+.prpp{color:var(--gray);font-size:.81rem;margin-bottom:26px}
+.prdiv{height:1px;background:var(--border);margin-bottom:22px}
+.prfl{list-style:none;flex:1;margin-bottom:30px}
+.prfl li{display:flex;align-items:flex-start;gap:10px;padding:8px 0;
+  border-bottom:1px solid rgba(255,255,255,.04);font-size:.87rem;color:var(--gray2)}
+.prfl li:last-child{border-bottom:none}
+.prfl .ck{color:var(--green);flex-shrink:0}
+
+/* FAQ */
+#faq{position:relative;z-index:1;padding:40px 0 100px}
+.fwrap{max-width:820px;margin:0 auto}
+.fi{border:1px solid var(--border);border-radius:16px;margin-bottom:10px;
+  overflow:hidden;transition:border-color .3s,box-shadow .3s}
+.fi.open{border-color:rgba(0,200,83,.35);box-shadow:0 0 20px rgba(0,200,83,.07)}
+.fq{padding:22px 26px;display:flex;justify-content:space-between;align-items:center;
+  cursor:pointer;font-weight:600;font-size:.97rem;background:var(--card);
+  transition:background .3s;user-select:none;gap:16px}
+.fq:hover{background:rgba(0,200,83,.04)}
+.fch{width:28px;height:28px;border-radius:50%;background:rgba(0,200,83,.08);
+  border:1px solid rgba(0,200,83,.2);display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:transform .35s,background .3s;color:var(--green);font-size:.7rem}
+.fi.open .fch{transform:rotate(180deg);background:rgba(0,200,83,.16)}
+.fa{max-height:0;overflow:hidden;transition:max-height .45s cubic-bezier(.16,1,.3,1)}
+.fi.open .fa{max-height:180px}
+.fai{padding:0 26px 22px;color:var(--gray2);font-size:.92rem;line-height:1.8}
+
+/* CTA */
+#cta{position:relative;z-index:1;padding:120px 48px;text-align:center;overflow:hidden}
+.ctag{display:flex;justify-content:center}
+.cglow{position:absolute;width:800px;height:400px;
+  background:radial-gradient(ellipse,rgba(0,200,83,.1) 0%,transparent 70%);
+  top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none}
+#cta h2{font-size:clamp(2.5rem,5.5vw,4.5rem);font-weight:900;letter-spacing:-2px;line-height:1.08;margin-bottom:20px}
+#cta p{color:var(--gray2);font-size:1.1rem;max-width:480px;margin:0 auto 48px;line-height:1.8}
+.cbtns{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+
+/* FOOTER */
+footer{position:relative;z-index:1;background:rgba(5,10,6,.92);
+  border-top:1px solid var(--border);padding:60px 48px 36px}
+.fgrid{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr;
+  gap:60px;margin-bottom:40px}
+.fblogo{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.fblogo img{height:32px}
+.fblogo span{font-size:1.2rem;font-weight:900}
+.fabout{color:var(--gray);font-size:.87rem;line-height:1.7;max-width:270px}
+.fcol h5{font-size:.74rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:2px;color:var(--gray);margin-bottom:18px}
+.flinks{list-style:none;display:flex;flex-direction:column;gap:11px}
+.flinks a{color:var(--gray2);text-decoration:none;font-size:.87rem;transition:color .2s}
+.flinks a:hover{color:var(--green)}
+.fbot{max-width:1200px;margin:0 auto;padding-top:26px;border-top:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:center;
+  font-size:.81rem;color:var(--gray)}
+.ftg{display:flex;align-items:center;gap:8px;color:var(--green);
+  text-decoration:none;font-size:.81rem;transition:opacity .2s}
+.ftg:hover{opacity:.7}
+
+/* RESPONSIVE */
+@media(max-width:1024px){
+  .sgrid{grid-template-columns:repeat(2,1fr)}
+  .srvgrid{grid-template-columns:repeat(2,1fr)}
+  .srvc.feat{grid-column:span 1}
+  .pgrid{grid-template-columns:1fr;gap:48px}
+  .prgrid{grid-template-columns:1fr;max-width:400px;margin:0 auto}
+  .fgrid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:768px){
+  nav{padding:14px 20px!important}
+  .nlinks{display:none}
+  .wrap{padding:0 20px}
+  #hero{padding:100px 20px 70px}
+  #hero h1{letter-spacing:-2px}
+  .sgrid{grid-template-columns:repeat(2,1fr);padding:0 20px;gap:12px}
+  #stats{padding:40px 0}
+  .srvgrid{grid-template-columns:1fr}
+  .hwgrid{grid-template-columns:1fr}
+  .hwgrid::before{display:none}
+  .prgrid{max-width:100%}
+  #cta{padding:80px 20px}
+  footer{padding:40px 20px 28px}
+  .fgrid{grid-template-columns:1fr;gap:34px}
+  .fbot{flex-direction:column;gap:12px;text-align:center}
+  section .wrap{padding:0 20px}
+}
+</style>
+</head>
+<body>
+
+<canvas id="bgc"></canvas>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="#" class="nbrand">
+    <img src="logo.png" alt="AutoShift">
+    <span class="nbname">Auto<em>Shift</em></span>
+  </a>
+  <ul class="nlinks">
+    <li><a href="#services">Услуги</a></li>
+    <li><a href="#product">AI Admin</a></li>
+    <li><a href="#how">Процесс</a></li>
+    <li><a href="#pricing">Цены</a></li>
+    <li><a href="#faq">FAQ</a></li>
+    <li><a href="https://t.me/AutoAlexsandr" target="_blank" class="ncta">Консультация →</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hglow"></div>
+  <div class="hbadge"><span class="dot"></span> Автоматизация нового поколения</div>
+  <h1>Ваш бизнес на<br><span class="gt htype"><span id="ttext">автопилоте</span><span id="tcursor"></span></span></h1>
+  <p>Внедряем AI-решения, которые работают вместо вас — 24/7, без ошибок и усталости. От ответов клиентам до полной автоматизации процессов.</p>
+  <div class="hbtns">
+    <a href="https://t.me/AutoAlexsandr" target="_blank" class="btn1">⚡ Бесплатная консультация</a>
+    <a href="https://t.me/AutoshiftAI" target="_blank" class="btn2">📢 Telegram-канал</a>
+  </div>
+  <div class="hscroll"><span>Прокрутите</span><div class="sline"></div></div>
+</section>
+
+<!-- MARQUEE -->
+<div class="mwrap">
+  <div class="mtrack">
+    <div class="mi"><span class="md"></span>AI Admin — умный ответчик</div>
+    <div class="mi"><span class="md"></span>Чат-боты 24/7</div>
+    <div class="mi"><span class="md"></span>CRM-интеграции под ключ</div>
+    <div class="mi"><span class="md"></span>RPA — роботизация процессов</div>
+    <div class="mi"><span class="md"></span>AI-агенты нового поколения</div>
+    <div class="mi"><span class="md"></span>Telegram-боты</div>
+    <div class="mi"><span class="md"></span>Автоматизация продаж</div>
+    <div class="mi"><span class="md"></span>Email-цепочки</div>
+    <div class="mi"><span class="md"></span>Аналитика и дашборды</div>
+    <div class="mi"><span class="md"></span>Бизнес-процессы под ключ</div>
+    <div class="mi"><span class="md"></span>AI Admin — умный ответчик</div>
+    <div class="mi"><span class="md"></span>Чат-боты 24/7</div>
+    <div class="mi"><span class="md"></span>CRM-интеграции под ключ</div>
+    <div class="mi"><span class="md"></span>RPA — роботизация процессов</div>
+    <div class="mi"><span class="md"></span>AI-агенты нового поколения</div>
+    <div class="mi"><span class="md"></span>Telegram-боты</div>
+    <div class="mi"><span class="md"></span>Автоматизация продаж</div>
+    <div class="mi"><span class="md"></span>Email-цепочки</div>
+    <div class="mi"><span class="md"></span>Аналитика и дашборды</div>
+    <div class="mi"><span class="md"></span>Бизнес-процессы под ключ</div>
+  </div>
+</div>
+
+<!-- STATS -->
+<section id="stats">
+  <div class="sgrid">
+    <div class="sc rv d1"><span class="sv">24/7</span><div class="sl">Ваши процессы работают без остановок и выходных</div></div>
+    <div class="sc rv d2"><span class="sv"><span data-count="80">0</span>%+</span><div class="sl">Сокращение времени на рутинные задачи</div></div>
+    <div class="sc rv d3"><span class="sv"><span data-count="10">0</span>+</span><div class="sl">Направлений автоматизации под любой бизнес</div></div>
+    <div class="sc rv d4"><span class="sv">0₽</span><div class="sl">Стоимость первой консультации — всегда бесплатно</div></div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section id="services">
+  <div class="wrap">
+    <div class="tag">Что мы делаем</div>
+    <h2 class="stitle rv">Автоматизируем <span class="gt">любой</span><br>процесс вашего бизнеса</h2>
+    <p class="ssub rv">Один партнёр для всей автоматизации — не нужно искать разных подрядчиков. Мы закрываем полный цикл.</p>
+    <div class="srvgrid">
+      <div class="srvc feat rv d1">
+        <div class="sico">🤖</div>
+        <h3>AI Admin — умный менеджер <span class="sbadge">⭐ Хит</span></h3>
+        <p>Наш флагманский продукт. Искусственный интеллект общается с клиентами как живой менеджер, квалифицирует запросы и передаёт горячую заявку вашему сотруднику. Работает в Telegram, WhatsApp, на сайте — везде одновременно.</p>
+      </div>
+      <div class="srvc rv d2">
+        <div class="sico">💬</div>
+        <h3>Чат-боты нового поколения</h3>
+        <p>Боты для продаж, поддержки, записи, оплат и рассылок. Интеграция с любой CRM-системой.</p>
+      </div>
+      <div class="srvc rv d1">
+        <div class="sico">🔄</div>
+        <h3>CRM-интеграции</h3>
+        <p>Связываем amoCRM, Битрикс24, Notion, Google Sheets и любые другие инструменты в единый автоматизированный поток.</p>
+      </div>
+      <div class="srvc rv d2">
+        <div class="sico">⚙️</div>
+        <h3>RPA — роботизация процессов</h3>
+        <p>Автоматизируем ручные операции: сбор данных, заполнение форм, обработку документов без участия человека.</p>
+      </div>
+      <div class="srvc rv d3">
+        <div class="sico">🧠</div>
+        <h3>AI-агенты</h3>
+        <p>Умные агенты, которые самостоятельно принимают решения, анализируют данные и выполняют многошаговые задачи.</p>
+      </div>
+      <div class="srvc rv d1">
+        <div class="sico">📊</div>
+        <h3>Аналитика и дашборды</h3>
+        <p>Автоматический сбор метрик и визуализация в реальном времени. Управляйте бизнесом по данным.</p>
+      </div>
+      <div class="srvc rv d2">
+        <div class="sico">📧</div>
+        <h3>Email-автоматизация</h3>
+        <p>Цепочки писем, триггерные рассылки, автосегментация базы. Продажи работают, пока вы спите.</p>
+      </div>
+      <div class="srvc rv d3">
+        <div class="sico">🏭</div>
+        <h3>Бизнес-процессы под ключ</h3>
+        <p>Полная автоматизация от первого контакта с клиентом до закрытия сделки и повторной продажи.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRODUCT -->
+<section id="product">
+  <div class="wrap">
+    <div class="pgrid">
+      <div>
+        <div class="tag">Флагманский продукт</div>
+        <h2 class="stitle rv">AI Admin —<br><span class="gt">ваш лучший сотрудник</span></h2>
+        <p class="ssub rv" style="margin-bottom:0">Не просто бот. Это AI-менеджер, который говорит как человек, думает как продавец и передаёт готовую заявку менеджеру — пока вы занимаетесь бизнесом.</p>
+        <div class="pfeats">
+          <div class="pf rv d1"><div class="pfico">⏰</div><div class="pftxt"><h4>Работает 24/7 без выходных</h4><p>Ни один клиент не уйдёт без ответа — даже в 3 ночи</p></div></div>
+          <div class="pf rv d2"><div class="pfico">🎯</div><div class="pftxt"><h4>Квалифицирует лиды автоматически</h4><p>Выясняет потребности и бюджет ещё до передачи менеджеру</p></div></div>
+          <div class="pf rv d3"><div class="pfico">📋</div><div class="pftxt"><h4>Передаёт готовую заявку</h4><p>Менеджер получает карточку клиента и сразу закрывает сделку</p></div></div>
+          <div class="pf rv d4"><div class="pfico">🔗</div><div class="pftxt"><h4>Интеграция с любой CRM</h4><p>amoCRM, Битрикс24, Telegram, WhatsApp и любые системы</p></div></div>
+        </div>
+      </div>
+      <div class="rv">
+        <div class="chat">
+          <div class="ctop">
+            <div class="cdots"><span></span><span></span><span></span></div>
+            <div class="cinfo"><div class="cname">AI Admin — AutoShift</div><div class="cstatus">● онлайн</div></div>
+            <div style="width:52px"></div>
+          </div>
+          <div class="cmsgs">
+            <div class="cm b" id="cm1"><div class="cav">AI</div><div class="cb">Добрый день! 👋 Помогу подобрать решение для вашего бизнеса. Что хотите автоматизировать?</div></div>
+            <div class="cm u" id="cm2"><div class="cav">👤</div><div class="cb">Хочу автоматизировать обработку заявок с сайта</div></div>
+            <div class="ctyp" id="ct1"><div class="cav">AI</div><div class="tbub"><div class="td"></div><div class="td"></div><div class="td"></div></div></div>
+            <div class="cm b" id="cm3"><div class="cav">AI</div><div class="cb">Отлично! Сколько заявок в сутки поступает? И есть ли CRM-система?</div></div>
+            <div class="cm u" id="cm4"><div class="cav">👤</div><div class="cb">Около 30 заявок, используем amoCRM</div></div>
+            <div class="ctyp" id="ct2"><div class="cav">AI</div><div class="tbub"><div class="td"></div><div class="td"></div><div class="td"></div></div></div>
+            <div class="cm b" id="cm5"><div class="cav">AI</div><div class="cb">✅ Идеально! Для вашего объёма есть готовое решение. Передаю специалисту — свяжется в течение 15 минут!</div></div>
+          </div>
+          <div class="cres" id="cres">⚡ <span>Заявка передана менеджеру — клиент квалифицирован</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW -->
+<section id="how">
+  <div class="wrap">
+    <div style="text-align:center;margin-bottom:56px">
+      <div class="tag">Процесс работы</div>
+      <h2 class="stitle rv">Три шага до <span class="gt">результата</span></h2>
+      <p class="ssub rv" style="margin:0 auto">Берём на себя всё — от анализа до запуска. Вы получаете работающую систему, а не обещания.</p>
+    </div>
+    <div class="hwgrid">
+      <div class="hwc rv d1"><div class="hwnum">1</div><h3>Бесплатная консультация</h3><p>Разбираем ваши процессы, находим узкие места и показываем, что именно можно автоматизировать. Без воды, без обязательств.</p></div>
+      <div class="hwc rv d2"><div class="hwnum">2</div><h3>Разработка и внедрение</h3><p>Создаём решение под ваш бизнес, интегрируем со всеми системами и тестируем каждый сценарий до запуска.</p></div>
+      <div class="hwc rv d3"><div class="hwnum">3</div><h3>Запуск и поддержка</h3><p>Запускаем, обучаем команду и сопровождаем на всех этапах. Система работает — вы масштабируетесь.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing">
+  <div class="wrap">
+    <div style="text-align:center;margin-bottom:56px">
+      <div class="tag">Тарифы</div>
+      <h2 class="stitle rv">Прозрачные <span class="gt">условия</span></h2>
+      <p class="ssub rv" style="margin:0 auto">Выберите формат сотрудничества. Первый шаг всегда бесплатный.</p>
+    </div>
+    <div class="prgrid">
+      <div class="prc rv d1">
+        <div class="prn">Консультация</div>
+        <div class="prd">Разбираем задачу, строим план автоматизации</div>
+        <div class="prpv">0₽</div>
+        <div class="prpp">всегда бесплатно</div>
+        <div class="prdiv"></div>
+        <ul class="prfl">
+          <li><span class="ck">✓</span>Аудит текущих процессов</li>
+          <li><span class="ck">✓</span>Карта автоматизации</li>
+          <li><span class="ck">✓</span>Подбор инструментов</li>
+          <li><span class="ck">✓</span>Оценка сроков и стоимости</li>
+        </ul>
+        <a href="https://t.me/AutoAlexsandr" target="_blank" class="btn2" style="text-align:center;display:block">Записаться →</a>
+      </div>
+      <div class="prc hot rv d2">
+        <div class="pbadge">⭐ Популярное</div>
+        <div class="prn">AI Admin</div>
+        <div class="prd">Умный AI-менеджер для вашего бизнеса</div>
+        <div class="prpv">—</div>
+        <div class="prpp">индивидуально / мес</div>
+        <div class="prdiv"></div>
+        <ul class="prfl">
+          <li><span class="ck">✓</span>Настройка под ваш скрипт</li>
+          <li><span class="ck">✓</span>Работа 24/7</li>
+          <li><span class="ck">✓</span>Интеграция с CRM</li>
+          <li><span class="ck">✓</span>Передача готовых заявок</li>
+          <li><span class="ck">✓</span>Поддержка и обновления</li>
+        </ul>
+        <a href="https://t.me/AutoAlexsandr" target="_blank" class="btn1" style="text-align:center;display:block">Узнать стоимость →</a>
+      </div>
+      <div class="prc rv d3">
+        <div class="prn">Под ключ</div>
+        <div class="prd">Полная автоматизация бизнеса</div>
+        <div class="prpv">—</div>
+        <div class="prpp">по проекту</div>
+        <div class="prdiv"></div>
+        <ul class="prfl">
+          <li><span class="ck">✓</span>Полный аудит процессов</li>
+          <li><span class="ck">✓</span>Разработка системы с нуля</li>
+          <li><span class="ck">✓</span>CRM + боты + AI-агенты</li>
+          <li><span class="ck">✓</span>Обучение команды</li>
+          <li><span class="ck">✓</span>Гарантийная поддержка</li>
+        </ul>
+        <a href="https://t.me/AutoAlexsandr" target="_blank" class="btn2" style="text-align:center;display:block">Обсудить проект →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq">
+  <div class="wrap">
+    <div style="text-align:center;margin-bottom:56px">
+      <div class="tag">FAQ</div>
+      <h2 class="stitle rv">Частые <span class="gt">вопросы</span></h2>
+      <p class="ssub rv" style="margin:0 auto">Если не нашли ответ — напишите в Telegram, ответим быстро.</p>
+    </div>
+    <div class="fwrap rv">
+      <div class="fi"><div class="fq">Сколько времени занимает внедрение?<span class="fch">▼</span></div><div class="fa"><div class="fai">AI Admin запускается за 3–7 рабочих дней. Сложные системы — от 2 до 6 недель. Точные сроки называем после консультации, когда понимаем задачу.</div></div></div>
+      <div class="fi"><div class="fq">Нужны ли технические знания для работы с системой?<span class="fch">▼</span></div><div class="fa"><div class="fai">Нет. Мы берём настройку, интеграцию и обучение на себя. Вы получаете готовое решение, которое просто работает — без технического порога.</div></div></div>
+      <div class="fi"><div class="fq">Подходит ли автоматизация для малого бизнеса?<span class="fch">▼</span></div><div class="fa"><div class="fai">Да, и особенно выгодна. Малый бизнес выигрывает больше всего: автоматизация заменяет нескольких сотрудников и стоит в разы дешевле их содержания.</div></div></div>
+      <div class="fi"><div class="fq">Что если AI-менеджер ответит неправильно?<span class="fch">▼</span></div><div class="fa"><div class="fai">Мы тщательно обучаем систему на вашей базе знаний и скриптах. В нестандартных ситуациях AI автоматически переводит диалог на живого менеджера — клиент этого не замечает.</div></div></div>
+      <div class="fi"><div class="fq">Есть ли поддержка после запуска?<span class="fch">▼</span></div><div class="fa"><div class="fai">Да, всегда. Мы следим за работой системы, обновляем её и оперативно решаем любые вопросы. Вы не остаётесь один на один с системой.</div></div></div>
+      <div class="fi"><div class="fq">Как начать работу с AutoShift?<span class="fch">▼</span></div><div class="fa"><div class="fai">Напишите в Telegram — @AutoAlexsandr. Первая консультация бесплатная: разберём вашу ситуацию и предложим решение без обязательств с вашей стороны.</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="cta">
+  <div class="cglow"></div>
+  <div class="ctag"><div class="tag">Начать сейчас</div></div>
+  <h2 class="rv">Готовы вывести бизнес<br><span class="gt">на автопилот?</span></h2>
+  <p class="rv">Первая консультация бесплатная. Разберём процессы и покажем, сколько времени и денег вы теряете без автоматизации.</p>
+  <div class="cbtns rv">
+    <a href="https://t.me/AutoAlexsandr" target="_blank" class="btn1">⚡ Написать в Telegram</a>
+    <a href="https://t.me/AutoshiftAI" target="_blank" class="btn2">📢 Подписаться на канал</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="fgrid">
+    <div>
+      <div class="fblogo"><img src="logo.png" alt="AutoShift"><span>AutoShift</span></div>
+      <p class="fabout">Автоматизируем бизнес-процессы с помощью AI. Работаем по всей России с 2026 года.</p>
+    </div>
+    <div class="fcol">
+      <h5>Услуги</h5>
+      <ul class="flinks">
+        <li><a href="#product">AI Admin</a></li>
+        <li><a href="#services">Чат-боты</a></li>
+        <li><a href="#services">CRM-интеграции</a></li>
+        <li><a href="#services">RPA</a></li>
+        <li><a href="#services">AI-агенты</a></li>
+      </ul>
+    </div>
+    <div class="fcol">
+      <h5>Контакты</h5>
+      <ul class="flinks">
+        <li><a href="https://t.me/AutoAlexsandr" target="_blank">@AutoAlexsandr</a></li>
+        <li><a href="https://t.me/AutoshiftAI" target="_blank">Telegram-канал</a></li>
+        <li><a href="#faq">FAQ</a></li>
+        <li><a href="#pricing">Тарифы</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="fbot">
+    <span>© 2026 AutoShift — Автоматизация для бизнеса</span>
+    <a href="https://t.me/AutoshiftAI" target="_blank" class="ftg">⚡ Telegram-канал AutoShift</a>
+  </div>
+</footer>
+
+<script>
+// ── CANVAS PARTICLES ─────────────────────────────────────────────────────────
+const cv=document.getElementById('bgc'),cx=cv.getContext('2d');
+function rsz(){cv.width=innerWidth;cv.height=innerHeight}rsz();
+window.addEventListener('resize',rsz);
+const N=75,pts=[];
+class P{
+  constructor(){this.init(true)}
+  init(s){
+    this.x=Math.random()*cv.width;
+    this.y=s?Math.random()*cv.height:(Math.random()>.5?-5:cv.height+5);
+    this.vx=(Math.random()-.5)*.4;this.vy=(Math.random()-.5)*.4;
+    this.r=Math.random()*1.5+.4;this.a=Math.random()*.35+.08;
+    this.c=Math.random()>.45?'#00c853':'#1de9b6';
+  }
+  upd(){this.x+=this.vx;this.y+=this.vy;
+    if(this.x<-10||this.x>cv.width+10||this.y<-10||this.y>cv.height+10)this.init();}
+  draw(){cx.beginPath();cx.arc(this.x,this.y,this.r,0,Math.PI*2);
+    cx.fillStyle=this.c;cx.globalAlpha=this.a;cx.fill();}
+}
+for(let i=0;i<N;i++)pts.push(new P());
+function lines(){
+  for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){
+    const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.sqrt(dx*dx+dy*dy);
+    if(d<130){cx.beginPath();cx.moveTo(pts[i].x,pts[i].y);cx.lineTo(pts[j].x,pts[j].y);
+      cx.strokeStyle='#00c853';cx.globalAlpha=(1-d/130)*.11;cx.lineWidth=.5;cx.stroke();}
+  }
+}
+(function loop(){cx.clearRect(0,0,cv.width,cv.height);
+  pts.forEach(p=>{p.upd();p.draw()});lines();cx.globalAlpha=1;requestAnimationFrame(loop);})();
+
+// ── TYPEWRITER ───────────────────────────────────────────────────────────────
+const words=['автопилоте','росте','прибыли','масштабировании','будущем'];
+let wi=0,ci=0,del=false;
+const tel=document.getElementById('ttext');
+function tw(){
+  const w=words[wi];
+  if(!del){tel.textContent=w.slice(0,++ci);
+    if(ci===w.length){del=true;setTimeout(tw,2300);return;}setTimeout(tw,85);}
+  else{tel.textContent=w.slice(0,--ci);
+    if(ci===0){del=false;wi=(wi+1)%words.length;setTimeout(tw,400);return;}setTimeout(tw,42);}
+}
+setTimeout(tw,1200);
+
+// ── SCROLL REVEAL ────────────────────────────────────────────────────────────
+const robs=new IntersectionObserver(es=>{
+  es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('on');robs.unobserve(e.target);}});
+},{threshold:.12});
+document.querySelectorAll('.rv').forEach(el=>robs.observe(el));
+
+// ── COUNTERS ─────────────────────────────────────────────────────────────────
+function cnt(el,t,dur=1800){
+  let s=0;const step=()=>{s+=t/(dur/16);if(s>=t){el.textContent=t;return;}
+    el.textContent=Math.floor(s);requestAnimationFrame(step);};requestAnimationFrame(step);}
+const cobs=new IntersectionObserver(es=>{
+  es.forEach(e=>{if(e.isIntersecting){const t=parseInt(e.target.dataset.count);
+    if(t)cnt(e.target,t);cobs.unobserve(e.target);}});},{threshold:.5});
+document.querySelectorAll('[data-count]').forEach(el=>cobs.observe(el));
+
+// ── CHAT ANIMATION ───────────────────────────────────────────────────────────
+const seq=[
+  {id:'cm1',t:400},{id:'cm2',t:1300},
+  {id:'ct1',t:2100,rm:true},{id:'cm3',t:3000},
+  {id:'cm4',t:4000},{id:'ct2',t:4800,rm:true},
+  {id:'cm5',t:5700},{id:'cres',t:6300}
+];
+function runChat(){
+  document.querySelectorAll('.cm,.ctyp,.cres').forEach(el=>el.classList.remove('on'));
+  seq.forEach(({id,t,rm})=>{
+    setTimeout(()=>{
+      const el=document.getElementById(id);if(!el)return;
+      el.classList.add('on');
+      if(rm)setTimeout(()=>el.classList.remove('on'),750);
+    },t);
+  });
+  setTimeout(runChat,10500);
+}
+const cob=new IntersectionObserver(es=>{
+  es.forEach(e=>{if(e.isIntersecting){runChat();cob.unobserve(e.target);}});},{threshold:.3});
+const chatEl=document.querySelector('.chat');if(chatEl)cob.observe(chatEl);
+
+// ── FAQ ──────────────────────────────────────────────────────────────────────
+document.querySelectorAll('.fq').forEach(q=>{
+  q.addEventListener('click',()=>{
+    const item=q.parentElement,open=item.classList.contains('open');
+    document.querySelectorAll('.fi').forEach(i=>i.classList.remove('open'));
+    if(!open)item.classList.add('open');
+  });
+});
+
+// ── NAV SHRINK ───────────────────────────────────────────────────────────────
+window.addEventListener('scroll',()=>{
+  document.getElementById('nav').style.padding=scrollY>60?'11px 48px':'18px 48px';
+});
+</script>
+</body>
+</html>
